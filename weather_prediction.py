@@ -13,8 +13,15 @@ import pickle
 
 def load_data(filepath='seattle-weather.csv'):
     """Load weather data from CSV file."""
-    df = pd.read_csv(filepath)
-    return df
+    try:
+        df = pd.read_csv(filepath)
+        return df
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Error: Data file '{filepath}' not found. Please ensure the file exists.")
+    except pd.errors.EmptyDataError:
+        raise ValueError(f"Error: Data file '{filepath}' is empty.")
+    except Exception as e:
+        raise Exception(f"Error loading data file '{filepath}': {str(e)}")
 
 def prepare_features(df):
     """
@@ -74,9 +81,16 @@ def save_model(model, filename='weather_model.pkl'):
 
 def load_model(filename='weather_model.pkl'):
     """Load a trained model from a file."""
-    with open(filename, 'rb') as f:
-        model = pickle.load(f)
-    return model
+    try:
+        with open(filename, 'rb') as f:
+            model = pickle.load(f)
+        return model
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Error: Model file '{filename}' not found. Please train the model first by running the script.")
+    except pickle.UnpicklingError:
+        raise ValueError(f"Error: Could not deserialize model file '{filename}'. The file may be corrupted.")
+    except Exception as e:
+        raise Exception(f"Error loading model file '{filename}': {str(e)}")
 
 def predict_weather(model, precipitation, temp_max, temp_min, wind):
     """
