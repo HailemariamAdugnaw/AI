@@ -562,21 +562,25 @@
 
                 <!-- Weather Type Selection -->
                 <div class="weather-preview">
-                    <div class="weather-icon active" data-type="sunny">
+                    <div class="weather-icon" data-type="sun">
                         <i class="fas fa-sun"></i>
-                        <span>Sunny</span>
+                        <span>Sun</span>
                     </div>
-                    <div class="weather-icon" data-type="cloudy">
-                        <i class="fas fa-cloud"></i>
-                        <span>Cloudy</span>
+                    <div class="weather-icon" data-type="fog">
+                        <i class="fas fa-smog"></i>
+                        <span>Fog</span>
                     </div>
-                    <div class="weather-icon" data-type="rainy">
+                    <div class="weather-icon" data-type="drizzle">
                         <i class="fas fa-cloud-rain"></i>
-                        <span>Rainy</span>
+                        <span>Drizzle</span>
                     </div>
-                    <div class="weather-icon" data-type="stormy">
-                        <i class="fas fa-bolt"></i>
-                        <span>Stormy</span>
+                    <div class="weather-icon" data-type="rain">
+                        <i class="fas fa-cloud-showers-heavy"></i>
+                        <span>Rain</span>
+                    </div>
+                    <div class="weather-icon" data-type="snow">
+                        <i class="fas fa-snowflake"></i>
+                        <span>Snow</span>
                     </div>
                 </div>
 
@@ -690,10 +694,11 @@
         // Update form based on selected weather type
         function updateFormForWeatherType(type) {
             const values = {
-                'sunny': { precip: 0, tempMax: 30, tempMin: 20, wind: 10 },
-                'cloudy': { precip: 0.5, tempMax: 22, tempMin: 15, wind: 15 },
-                'rainy': { precip: 12.5, tempMax: 18, tempMin: 12, wind: 25 },
-                'stormy': { precip: 45.2, tempMax: 16, tempMin: 10, wind: 45 }
+                'sun': { precip: 0, tempMax: 25, tempMin: 15, wind: 10 },
+                'fog': { precip: 0, tempMax: 15, tempMin: 10, wind: 5 },
+                'drizzle': { precip: 2.5, tempMax: 12, tempMin: 8, wind: 15 },
+                'rain': { precip: 12.5, tempMax: 14, tempMin: 10, wind: 20 },
+                'snow': { precip: 8.0, tempMax: 2, tempMin: -2, wind: 12 }
             };
             
             if (values[type]) {
@@ -709,7 +714,7 @@
             }
         }
 
-        // Form submission with simulation (replace with actual backend call)
+        // Form submission with API call
         document.getElementById('weatherForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -725,82 +730,55 @@
                 wind: parseFloat(document.getElementById('wind').value)
             };
             
-            // Simulate API call delay
-            setTimeout(() => {
+            // Call the prediction API
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
                 // Hide loading
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('predictBtn').style.display = 'flex';
                 
-                // Generate prediction based on values (simulated ML model)
-                const prediction = generatePrediction(formData);
+                if (data.success) {
+                    // Highlight the predicted weather icon
+                    highlightWeatherIcon(data.prediction);
+                    
+                    // Display results
+                    displayResults(data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                // Hide loading
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('predictBtn').style.display = 'flex';
                 
-                // Display results
-                displayResults(prediction);
-            }, 1500);
+                alert('Error making prediction: ' + error);
+            });
         });
 
-        // Simulated ML Prediction Logic
-        function generatePrediction(data) {
-            let prediction = "";
-            let confidence = 0;
-            let icon = "fas fa-sun";
-            let recommendation = "";
+        // Highlight the predicted weather icon
+        function highlightWeatherIcon(weatherType) {
+            const icons = document.querySelectorAll('.weather-icon');
             
-            // Simple decision tree (replace with actual model call)
-            if (data.precipitation > 20) {
-                prediction = "Heavy Rain Expected";
-                confidence = 92;
-                icon = "fas fa-cloud-showers-heavy";
-                recommendation = "Carry an umbrella and avoid outdoor plans.";
-            } else if (data.precipitation > 5) {
-                prediction = "Light Rain Likely";
-                confidence = 78;
-                icon = "fas fa-cloud-rain";
-                recommendation = "Take a light jacket and umbrella just in case.";
-            } else if (data.wind > 30) {
-                prediction = "Windy Conditions";
-                confidence = 85;
-                icon = "fas fa-wind";
-                recommendation = "Secure loose objects outdoors.";
-            } else if (data.temp_max - data.temp_min > 15) {
-                prediction = "Variable Conditions";
-                confidence = 70;
-                icon = "fas fa-cloud-sun";
-                recommendation = "Dress in layers for changing temperatures.";
-            } else if (data.temp_max > 28) {
-                prediction = "Hot & Sunny";
-                confidence = 95;
-                icon = "fas fa-sun";
-                recommendation = "Stay hydrated and use sunscreen.";
-            } else if (data.temp_min < 5) {
-                prediction = "Cold & Clear";
-                confidence = 88;
-                icon = "fas fa-snowflake";
-                recommendation = "Dress warmly and watch for frost.";
-            } else {
-                prediction = "Partly Cloudy";
-                confidence = 82;
-                icon = "fas fa-cloud-sun";
-                recommendation = "Good day for most outdoor activities.";
+            // Remove active class from all icons
+            icons.forEach(icon => icon.classList.remove('active'));
+            
+            // Add active class to the predicted weather type
+            const predictedIcon = document.querySelector(`.weather-icon[data-type="${weatherType}"]`);
+            if (predictedIcon) {
+                predictedIcon.classList.add('active');
             }
-            
-            // Adjust confidence based on data consistency
-            const tempRange = data.temp_max - data.temp_min;
-            if (tempRange < 5) confidence += 5;
-            if (data.wind < 10) confidence += 3;
-            
-            confidence = Math.min(98, confidence);
-            
-            return {
-                prediction,
-                confidence,
-                icon,
-                recommendation
-            };
         }
 
         // Display results with animation
-        function displayResults(result) {
+        function displayResults(data) {
             const container = document.getElementById('resultContainer');
             const icon = document.getElementById('resultIcon');
             const text = document.getElementById('predictionText');
@@ -808,16 +786,54 @@
             const confidenceBar = document.getElementById('confidenceBar');
             const recommendation = document.getElementById('recommendation');
             
+            // Map weather types to icons and recommendations
+            const weatherInfo = {
+                'sun': {
+                    icon: 'fas fa-sun',
+                    text: 'Sunny Day Ahead',
+                    recommendation: 'Perfect day for outdoor activities! Don\'t forget your sunscreen.'
+                },
+                'fog': {
+                    icon: 'fas fa-smog',
+                    text: 'Foggy Conditions',
+                    recommendation: 'Drive carefully and use low beam headlights. Visibility may be reduced.'
+                },
+                'drizzle': {
+                    icon: 'fas fa-cloud-rain',
+                    text: 'Light Drizzle Expected',
+                    recommendation: 'Take a light jacket and umbrella just in case.'
+                },
+                'rain': {
+                    icon: 'fas fa-cloud-showers-heavy',
+                    text: 'Rainy Weather',
+                    recommendation: 'Carry an umbrella and wear waterproof clothing. Plan for indoor activities.'
+                },
+                'snow': {
+                    icon: 'fas fa-snowflake',
+                    text: 'Snow Expected',
+                    recommendation: 'Dress warmly and watch for icy conditions. Drive carefully.'
+                }
+            };
+            
+            const prediction = data.prediction;
+            const info = weatherInfo[prediction] || {
+                icon: 'fas fa-cloud',
+                text: prediction.charAt(0).toUpperCase() + prediction.slice(1),
+                recommendation: 'Check local weather updates for more details.'
+            };
+            
             // Update content
-            icon.innerHTML = `<i class="${result.icon}"></i>`;
-            text.textContent = result.prediction;
-            confidenceValue.textContent = `${result.confidence}%`;
-            recommendation.innerHTML = `<strong><i class="fas fa-lightbulb"></i> Recommendation:</strong> ${result.recommendation}`;
+            icon.innerHTML = `<i class="${info.icon}"></i>`;
+            text.textContent = info.text;
+            
+            const confidencePercent = Math.round(data.confidence * 100);
+            confidenceValue.textContent = `${confidencePercent}%`;
+            recommendation.innerHTML = `<strong><i class="fas fa-lightbulb"></i> Recommendation:</strong> ${info.recommendation}`;
             
             // Animate confidence bar
             confidenceBar.style.width = '0%';
             setTimeout(() => {
-                confidenceBar.style.width = `${result.confidence}%`;
+                confidenceBar.style.width = `${confidencePercent}%`;
             }, 300);
             
             // Show container with animation
@@ -833,19 +849,8 @@
             setupRangeUpdates();
             setupWeatherIcons();
             
-            // Set default weather type
-            updateFormForWeatherType('sunny');
-            
-            // Add some random values for demo
-            document.getElementById('precipitation').value = (Math.random() * 30).toFixed(1);
-            document.getElementById('temp_max').value = (Math.random() * 20 + 15).toFixed(1);
-            document.getElementById('temp_min').value = (Math.random() * 10 + 10).toFixed(1);
-            document.getElementById('wind').value = (Math.random() * 30).toFixed(1);
-            
-            // Trigger initial updates
-            ['precipitation', 'temp_max', 'temp_min', 'wind'].forEach(id => {
-                document.getElementById(id).dispatchEvent(new Event('input'));
-            });
+            // Set default weather type to sun
+            updateFormForWeatherType('sun');
         });
     </script>
 </body>

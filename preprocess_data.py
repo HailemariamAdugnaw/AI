@@ -12,10 +12,11 @@ print(f"Loaded data: {df.shape[0]} rows, {df.shape[1]} columns")
 
 # --- Preprocessing ---
 
-# 1. Create binary target 'rain' from 'weather' column
+# 1. Keep 'weather' column as multi-class target (no need to convert to binary)
+# Weather types: drizzle, fog, rain, snow, sun
 if 'weather' in df.columns:
-    df['rain'] = df['weather'].apply(lambda x: 1 if 'rain' in str(x).lower() else 0)
-    df = df.drop('weather', axis=1)
+    # Keep the weather column as is - it's our target
+    pass
 
 # 2. Drop 'date' column
 if 'date' in df.columns:
@@ -25,8 +26,8 @@ if 'date' in df.columns:
 df = df.dropna()
 
 # 4. Split features and target
-X = df.drop('rain', axis=1)
-y = df['rain']
+X = df.drop('weather', axis=1)
+y = df['weather']
 
 # 5. Standardize numerical features
 scaler = StandardScaler()
@@ -43,5 +44,7 @@ print("Preprocessed data saved to 'weather_data.pkl'")
 
 print("Preprocessing done!")
 print(f"Features shape: {X_train.shape}, Target shape: {y_train.shape}")
-print(f"Number of rainy days in train set: {y_train.sum()} / {y_train.shape[0]}")
-print(f"Number of rainy days in test set: {y_test.sum()} / {y_test.shape[0]}")
+print(f"Weather types distribution in train set:")
+print(pd.Series(y_train).value_counts())
+print(f"\nWeather types distribution in test set:")
+print(pd.Series(y_test).value_counts())

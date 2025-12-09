@@ -1,24 +1,36 @@
-from flask import Flask, render_template, request
+from flask import Flask, request, jsonify, send_from_directory
 import pandas as pd
 import joblib
+import os
+import numpy as np
 
 # Initialize app
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.')
 
 # Load trained model and scaler
 model = joblib.load('weather_model.pkl')
 _, _, _, _, scaler = joblib.load('weather_data.pkl')
 
-# Home page
-@app.route('/', methods=['GET', 'POST'])
+# Get weather classes
+weather_classes = sorted(model.classes_)
+print(f"Loaded model can predict: {weather_classes}")
+
+# Serve the main HTML file
+@app.route('/')
 def index():
-    prediction = None
-    if request.method == 'POST':
-        # Get data from form
-        precipitation = float(request.form['precipitation'])
-        temp_max = float(request.form['temp_max'])
-        temp_min = float(request.form['temp_min'])
-        wind = float(request.form['wind'])
+    return send_from_directory('.', 'index.html')
+
+# API endpoint for predictions
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        # Get data from JSON request
+        data = request.get_json()
+        
+        precipitation = float(data['precipitation'])
+        temp_max = float(data['temp_max'])
+        temp_min = float(data['temp_min'])
+        wind = float(data['wind'])
 
         # Prepare dataframe
         new_data = pd.DataFrame([[precipitation, temp_max, temp_min, wind]],
@@ -28,12 +40,27 @@ def index():
         X_scaled = scaler.transform(new_data)
         
         # Predict
-        pred = model.predict(X_scaled)[0]
-        prob = model.predict_proba(X_scaled)[0][1]
-
-        prediction = f"Rain: {'Yes' if pred==1 else 'No'}, Probability: {prob*100:.2f}%"
-
-    return render_template('index.html', prediction=prediction)
+        prediction = model.predict(X_scaled)[0]
+        probabilities = model.predict_proba(X_scaled)[0]
+        
+        # Create probability dictionary
+        prob_dict = {weather_classes[i]: float(probabilities[i]) for i in range(len(weather_classes))}
+        
+        # Get confidence (probability of predicted class)
+        confidence = float(probabilities[model.classes_.tolist().index(prediction)])
+        
+        return jsonify({
+            'success': True,
+            'prediction': prediction,
+            'confidence': confidence,
+            'probabilities': prob_dict
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
 
 # Run app
 if __name__ == '__main__':
