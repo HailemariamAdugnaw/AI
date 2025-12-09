@@ -1,8 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 import pandas as pd
 import joblib
-import os
-import numpy as np
 
 # Initialize app
 app = Flask(__name__, static_folder='.')
