@@ -663,13 +663,15 @@
             inputs.forEach(input => {
                 const valueDisplay = document.getElementById(`${input.id}Value`);
                 
-                // Update on input
-                input.addEventListener('input', () => {
-                    valueDisplay.textContent = parseFloat(input.value).toFixed(1);
-                });
-                
-                // Initial value
-                valueDisplay.textContent = parseFloat(input.value || 0).toFixed(1);
+                if (valueDisplay) {
+                    // Update on input
+                    input.addEventListener('input', () => {
+                        valueDisplay.textContent = parseFloat(input.value).toFixed(1);
+                    });
+                    
+                    // Initial value
+                    valueDisplay.textContent = parseFloat(input.value || 0).toFixed(1);
+                }
             });
         }
 
