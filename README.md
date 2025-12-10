@@ -5,17 +5,34 @@ A Flask-based web application that predicts weather conditions using machine lea
 ## Features
 - Predicts 5 weather types: Rain, Drizzle, Snow, Fog, Sun
 - Uses Random Forest Classifier for accurate predictions
-- Beautiful, responsive web interface
+- Beautiful, responsive web interface with animated gradients
 - Real-time predictions based on weather parameters
+- 80.5% model accuracy
 
-## Installation
+## Quick Start
 
-### 1. Install Dependencies
+### Option 1: Use the run script (Recommended)
+```bash
+# Make the script executable (first time only)
+chmod +x run.sh
+
+# Run the application
+./run.sh
+```
+
+The script will automatically:
+- Train the model if not already trained
+- Start the Flask web server
+- Open the app at http://localhost:5000
+
+### Option 2: Manual steps
+
+#### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Train the Model
+#### 2. Train the Model
 Before running the application, you need to train the machine learning model:
 
 ```bash
@@ -30,7 +47,7 @@ This will:
 - Display model accuracy and metrics
 - Generate a confusion matrix
 
-### 3. Run the Application
+#### 3. Run the Application
 Start the Flask web server:
 
 ```bash
@@ -49,6 +66,26 @@ The application will be available at: `http://localhost:5000`
    - **Wind Speed (km/h)**: Wind speed
 3. Click "Generate Prediction" to get the weather forecast
 4. View the prediction with confidence level and recommendations
+
+### Example Inputs
+
+**Sunny Day:**
+- Precipitation: 0.0 mm
+- Max Temp: 30°C
+- Min Temp: 20°C
+- Wind: 10 km/h
+
+**Rainy Day:**
+- Precipitation: 15.5 mm
+- Max Temp: 18°C
+- Min Temp: 12°C
+- Wind: 25 km/h
+
+**Snowy Day:**
+- Precipitation: 5.0 mm
+- Max Temp: -2°C
+- Min Temp: -8°C
+- Wind: 15 km/h
 
 ## Project Structure
 
