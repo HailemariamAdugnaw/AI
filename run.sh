@@ -29,4 +29,7 @@ echo ""
 echo "Press Ctrl+C to stop the server"
 echo ""
 
+# Set Flask environment to development for local testing
+export FLASK_ENV=development
+
 python app.py

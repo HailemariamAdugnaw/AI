@@ -166,8 +166,18 @@ If you see this error, make sure to run `python train_models.py` first to genera
 ### Port already in use
 If port 5000 is already in use, you can modify the port in `app.py`:
 ```python
-app.run(debug=True, host='0.0.0.0', port=5001)  # Change port to 5001
+app.run(debug=debug_mode, host='0.0.0.0', port=5001)  # Change port to 5001
 ```
+
+### Running in Production
+For production deployment, make sure to:
+1. Do NOT set `FLASK_ENV=development`
+2. Use a production WSGI server like Gunicorn:
+   ```bash
+   pip install gunicorn
+   gunicorn -w 4 -b 0.0.0.0:5000 app:app
+   ```
+3. Never run with `debug=True` in production
 
 ## Model Performance
 

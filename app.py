@@ -105,6 +105,12 @@ def get_weather_info(weather, confidence, precip, temp_max, temp_min, wind):
 
 # Run app
 if __name__ == '__main__':
+    import os
+    
     print("Starting Weather Prediction Flask App...")
     print("Make sure you have trained the model first by running: python train_models.py")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    
+    # Use debug mode only in development, not in production
+    debug_mode = os.environ.get('FLASK_ENV') == 'development'
+    
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
