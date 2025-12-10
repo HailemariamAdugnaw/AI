@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # Load trained model and scaler
 model = joblib.load('weather_model.pkl')
-_, _, _, _, scaler = joblib.load('weather_data.pkl')
+scaler = joblib.load('weather_scaler.pkl')
 
 # Home page
 @app.route('/', methods=['GET', 'POST'])
@@ -29,13 +29,14 @@ def index():
         
         # Predict
         pred = model.predict(X_scaled)[0]
-        prob = model.predict_proba(X_scaled)[0][1]
+        prob = model.predict_proba(X_scaled)[0]
 
-        prediction = f"Rain: {'Yes' if pred==1 else 'No'}, Probability: {prob*100:.2f}%"
+        # Format prediction with probabilities for each class
+        prob_dict = {cls: f"{p*100:.2f}%" for cls, p in zip(model.classes_, prob)}
+        prediction = f"Predicted Weather: {pred}, Probabilities: {prob_dict}"
 
     return render_template('index.html', prediction=prediction)
 
 # Run app
-if __name__ == '__main__':
+if __name__ == 'main':
     app.run(debug=True)
-
